@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>생일 ATM 만들기</title>
+    <meta property="og:title" content="특별한 생일 ATM">
+    <meta property="og:description" content="생일 축하를 위한 특별한 ATM 🎉">
+    <meta property="og:type" content="website">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        button {
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            outline: none;
+            font-family: inherit;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(180deg, #4A9FE8 0%, #2E86D4 100%);
+            color: white;
+            font-weight: 600;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(46, 134, 212, 0.35);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.97);
+            box-shadow: 0 2px 8px rgba(46, 134, 212, 0.35);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(180deg, #9CA3AF 0%, #6B7280 100%);
+            color: white;
+            font-weight: 600;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:active {
+            transform: scale(0.97);
+        }
+
+        /* ===== Screen 0: 설정 화면 ===== */
+        #screen0 {
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .setup-container {
+            background: white;
+            padding: 35px 30px;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            max-width: 550px;
+            width: 100%;
+        }
+        
+        .setup-title {
+            font-size: 26px;
+            color: #1f2937;
+            font-weight: 700;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        
+        .setup-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 18px;
+        }
+        
+        .form-group-inline {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4A9FE8;
+        }
+        
+        .icon-selector {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-top: 6px;
+        }
+        
+        .icon-btn {
+            font-size: 28px;
+            padding: 8px;
+            background: #f3f4f6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .icon-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .icon-btn.selected {
+            background: #dbeafe;
+            border-color: #4A9FE8;
+            transform: scale(1.05);
+        }
+        
+        .date-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 17px;
+            margin-top: 8px;
+        }
+
+        /* ===== Screen 1: Welcome ===== */
+        #screen1 {
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+        }
+        
+        .welcome-content {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .bank-logo-container {
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 24px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12));
+        }
+        
+        .bank-logo {
+            font-size: 100px;
+        }
+        
+        .welcome-text {
+            color: #1f2937;
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .bank-name {
+            color: #4b5563;
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .main-title {
+            font-size: 30px;
+            color: #1f2937;
+            margin-bottom: 40px;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .main-title .highlight {
+            color: #2E86D4;
+        }
+        
+        .login-btn {
+            padding: 18px 80px;
+            font-size: 20px;
+        }
+        
+        /* ===== Screen 2: Select Name ===== */
+        #screen2 {
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+        }
+        
+        .screen-title {
+            font-size: 32px;
+            color: #1f2937;
+            margin-bottom: 40px;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .name-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .name-btn {
+            padding: 40px 45px;
+            font-size: 22px;
+        }
+        
+        /* ===== Screen 3: Verify Identity ===== */
+        #screen3 {
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+        }
+        
+        .verify-container {
+            background: white;
+            padding: 45px 50px;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            max-width: 550px;
+        }
+        
+        .verify-title {
+            font-size: 30px;
+            color: #1f2937;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .verify-subtitle {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+        
+        .verify-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .user-photo {
+            width: 180px;
+            height: 180px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 90px;
+        }
+        
+        .verify-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        
+        .verify-btn {
+            padding: 20px 60px;
+            font-size: 22px;
+        }
+
+        /* ===== Screen 4: PIN Entry ===== */
+        #screen4 {
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+        }
+        
+        .pin-container {
+            background: white;
+            padding: 50px 60px;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 70px;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .pin-left {
+            text-align: left;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .pin-title {
+            font-size: 32px;
+            color: #1f2937;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .pin-subtitle {
+            font-size: 20px;
+            color: #6b7280;
+            margin-bottom: 35px;
+            font-weight: 500;
+        }
+        
+        .pin-dots {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .pin-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 3px solid #d1d5db;
+            transition: all 0.2s ease;
+        }
+        
+        .pin-dot.filled {
+            background: #2E86D4;
+            border-color: #2E86D4;
+            box-shadow: 0 0 12px rgba(46, 134, 212, 0.5);
+        }
+        
+        .error-msg {
+            color: #dc2626;
+            font-size: 18px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            height: 28px;
+        }
+        
+        .error-msg.show {
+            opacity: 1;
+        }
+        
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            width: 100%;
+            max-width: 280px;
+            flex-shrink: 0;
+        }
+        
+        .key-btn {
+            width: 100%;
+            aspect-ratio: 1;
+            min-height: 70px;
+            max-height: 80px;
+            font-size: 32px;
+            font-weight: 600;
+            color: #1f2937;
+            background: #f3f4f6;
+            border-radius: 14px;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .key-btn:active {
+            background: #e5e7eb;
+            transform: scale(0.95);
+        }
+        
+        .key-action {
+            font-size: 22px;
+            width: 100%;
+            height: 60px;
+            aspect-ratio: auto;
+        }
+        
+        #confirmBtn {
+            background: linear-gradient(180deg, #4A9FE8 0%, #2E86D4 100%);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 16px rgba(46, 134, 212, 0.5);
+        }
+        
+        /* ===== Screen 5: Birthday Celebration ===== */
+        #screen5 {
+            background: #ffffff;
+            position: relative;
+            overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+        }
+        
+        .celebration-top {
+            text-align: center;
+            z-index: 10;
+            position: relative;
+        }
+        
+        .celebration-title {
+            font-size: 50px;
+            color: #ff84c6;
+            margin-bottom: 12px;
+            font-weight: 800;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            line-height: 1.2;
+        }
+        
+        .celebration-title .highlight {
+            color: #ffd700;
+            display: block;
+            margin-top: 8px;
+        }
+        
+        .celebration-subtitle {
+            font-size: 26px;
+            color: #666666;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+	#screen5 .content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* 부모 컨테이너: 자식들을 무조건 수평 중앙에 놓습니다 */
+.atm-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    perspective: 1200px;
+    display: flex;
+    justify-content: center; /* 수평 중앙 */
+    align-items: center;     /* 수직 중앙 */
+    overflow: visible;       /* 반만 보이는 현상 방지를 위해 잠시 수정 */
+    margin: 20px 0;
+}
+
+/* 투입구 모양 자연스럽게 통합 */
+.black-bar {
+    width: 220px;
+    background: #1a1a1a;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) translateZ(-100px) rotateX(20deg);
+}
+
+/* 상단바: 'left: 50%'와 'translateX(-50%)' 조합이 가장 정확합니다 */
+.top-bar {
+    width: 220px;
+    height: 40px;
+    position: absolute;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateZ(0); /* 정확한 수평 중앙 정렬 */
+    
+    z-index: 100;
+    border-radius: 12px 12px 0 0;
+    border: 4px solid #333;
+    border-bottom: none;
+    background: #1a1a1a;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+/* 하단바: 상단바와 동일한 중앙 정렬 적용 */
+.bottom-bar {
+    width: 220px;
+    height: 40px;
+    position: absolute;
+    top: 130px; 
+    left: 50%;
+    transform: translateX(-50%) translateZ(0); /* 정확한 수평 중앙 정렬 */
+    
+    z-index: 5;
+    border-radius: 0 0 12px 12px;
+    border: 4px solid #333;
+    border-top: none;
+    background: #1a1a1a;
+}
+
+.slot-line {
+    width: 160px;
+    height: 3px;
+    background: #000;
+    margin-bottom: -2px;
+}
+
+/* 카드 가림막: 투입구 바로 뒤에 밀착 */
+/* ★ 상단 전용 가림막: 투입구 윗부분(z-index 100보다 바로 뒤)을 흰색으로 덮어버림 */
+.top-hider {
+    position: absolute;
+    width: 100%;
+    height: 120px; /* 투입구 윗부분을 충분히 덮는 높이 */
+    background: #ffffff;
+    top: 0;
+    left: 0;
+    /* 투입구(translateZ -100px)보다 살짝 뒤에 배치 */
+    transform: translateZ(-102px); 
+    z-index: 90; /* 투입구 상단바(110)보다는 뒤, 카드(50)보다는 앞 */
+}
+      
+
+/* 카드: 투입구와 동일한 방식으로 중앙 정렬 */
+.card {
+    width: 130px;
+    height: 190px;
+    background: linear-gradient(135deg, #1e90ff, #0052cc);
+    border-radius: 10px;
+    position: absolute;
+    left: 50%;
+    /* 기존 애니메이션 sandwichInsert에 translateX(-50%)를 포함시켜야 합니다 */
+    z-index: 50;
+    animation: sandwichInsert 3s infinite linear;
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    top: 25px; left: 20px;
+    width: 35px; height: 25px;
+    background: #ffd700;
+    border-radius: 4px;
+}
+
+/* ★ 중요: 애니메이션 안에도 중앙 정렬(translateX(-50%))이 포함되어야 합니다 */
+@keyframes sandwichInsert {
+    0% { transform: translateX(-50%) translateZ(400px) translateY(250px) rotateX(15deg); opacity: 0; }
+    10% { opacity: 1; }
+    75% { opacity: 1; transform: translateX(-50%) translateZ(-95px) translateY(-5px) rotateX(45deg); }
+    85% { opacity: 1; }
+    100% { transform: translateX(-50%) translateZ(-350px) translateY(-80px) rotateX(70deg); opacity: 0; }
+}
+      .card {
+    /* ... 기존 속성 ... */
+    z-index: 50; /* 투입구와 상단 가림막보다 뒤에 위치 */
+    animation: sandwichInsert 3.5s infinite ease-in-out;
+}
+
+        /* ===== Screen 6: 이름1 - 잔액 부족 ===== */
+        #screen6 {
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+        }
+        
+        .error-container {
+            background: #374151;
+            padding: 50px 70px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 2px solid #4b5563;
+            max-width: 550px;
+        }
+        
+        .error-icon {
+            font-size: 70px;
+            margin-bottom: 18px;
+        }
+        
+        .error-title {
+            font-size: 32px;
+            color: #f87171;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+        
+        .error-message {
+            font-size: 20px;
+            color: #e5e7eb;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .error-detail {
+            background: #1f2937;
+            padding: 22px 35px;
+            border-radius: 12px;
+            margin: 25px 0;
+        }
+        
+        .error-detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 18px;
+        }
+        
+        .error-detail-label {
+            color: #9ca3af;
+        }
+        
+        .error-detail-value {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+        
+        .retry-btn {
+            margin-top: 25px;
+            padding: 16px 55px;
+            font-size: 18px;
+        }
+
+        /* ===== Screen 7: 이름2 - 협박 ===== */
+        #screen7 {
+            background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%);
+        }
+        
+        .warning-container {
+            background: white;
+            padding: 50px 70px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 550px;
+        }
+        
+        .warning-icon {
+            font-size: 70px;
+            margin-bottom: 18px;
+            animation: shake 0.5s ease infinite;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+        
+        .warning-title {
+            font-size: 32px;
+            color: #1f2937;
+            font-weight: 700;
+            margin-bottom: 22px;
+        }
+        
+        .warning-message {
+            font-size: 20px;
+            color: #4b5563;
+            margin-bottom: 18px;
+            line-height: 1.7;
+        }
+        
+        .warning-alert {
+            background: linear-gradient(180deg, #fecaca 0%, #fca5a5 100%);
+            padding: 18px 28px;
+            border-radius: 12px;
+            margin: 22px 0;
+            font-size: 18px;
+            color: #991b1b;
+            font-weight: 600;
+            animation: blink 1s ease infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .warning-small {
+            font-size: 16px;
+            color: #6b7280;
+            margin-top: 18px;
+        }
+        
+        .honest-btn {
+            margin-top: 25px;
+            padding: 16px 45px;
+            font-size: 18px;
+            background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+        }
+
+        /* ===== Screen 8, 9: 땡 화면들 ===== */
+        #screen8, #screen9 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .wrong-container {
+            background: white;
+            padding: 50px 70px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            max-width: 550px;
+        }
+        
+        .wrong-icon {
+            font-size: 70px;
+            margin-bottom: 18px;
+            animation: bounce 0.8s ease infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .wrong-title {
+            font-size: 32px;
+            color: #1f2937;
+            font-weight: 700;
+            margin-bottom: 22px;
+        }
+        
+        .wrong-message {
+            font-size: 20px;
+            color: #4b5563;
+            margin-bottom: 18px;
+            line-height: 1.7;
+        }
+        
+        .wrong-hint {
+            background: #fef3c7;
+            padding: 18px 28px;
+            border-radius: 12px;
+            margin: 22px 0;
+            font-size: 17px;
+            color: #92400e;
+            font-weight: 600;
+        }
+        
+        .wrong-btn {
+            margin-top: 25px;
+            padding: 16px 45px;
+            font-size: 18px;
+        }
+        
+        /* ===== 축하 효과 애니메이션 ===== */
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            opacity: 0.8;
+        }
+        
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+        
+        .star {
+            position: absolute;
+            font-size: 40px;
+            animation: star-float 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes star-float {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.8; }
+            50% { transform: translateY(-30px) scale(1.2); opacity: 1; }
+        }
+        
+        .firework {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        @keyframes explode {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { 
+                transform: translate(calc(var(--x) * 80px), calc(var(--y) * 80px)) scale(0); 
+                opacity: 0; 
+            }
+        }
+        
+        /* ===== 태블릿 최적화 ===== */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .pin-container {
+                padding: 40px 50px;
+                gap: 50px;
+            }
+            
+            .keypad {
+                max-width: 250px;
+            }
+            
+            .key-btn {
+                min-height: 60px;
+                max-height: 70px;
+                font-size: 28px;
+            }
+            
+            .key-action {
+                height: 55px;
+            }
+        }
+        
+        /* ===== 모바일 최적화 ===== */
+        @media (max-width: 768px) {
+            .screen {
+                padding: 20px;
+            }
+            
+            .welcome-header {
+                flex-direction: column-reverse;
+                align-items: center;
+                gap: 30px;
+            }
+            
+            .bank-logo-container {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .welcome-text-container {
+                text-align: center;
+            }
+            
+            .main-title {
+                font-size: 28px;
+            }
+            
+            .screen-title {
+                font-size: 28px;
+            }
+            
+            .name-grid {
+                grid-template-columns: 1fr;
+                max-width: 320px;
+            }
+            
+            .name-btn {
+                padding: 35px 45px;
+                font-size: 20px;
+            }
+            
+            .verify-container, .pin-container {
+                padding: 30px 25px;
+            }
+            
+            .verify-content {
+                flex-direction: column;
+                gap: 30px;
+            }
+            
+            .user-photo {
+                width: 150px;
+                height: 150px;
+                font-size: 70px;
+            }
+            
+            .error-container, .warning-container {
+                padding: 30px 25px;
+            }
+            
+            .error-title, .warning-title {
+                font-size: 28px;
+            }
+            
+            .error-message, .warning-message {
+                font-size: 18px;
+            }
+            
+            .pin-container {
+                flex-direction: column;
+                gap: 30px;
+                max-width: 100%;
+                width: 100%;
+                padding: 25px 20px;
+            }
+            
+            .pin-left {
+                text-align: center;
+            }
+            
+            .keypad {
+                width: 100%;
+                max-width: 100%;
+                gap: 10px;
+            }
+            
+            .key-btn {
+                width: 100%;
+                height: 60px;
+                font-size: 24px;
+            }
+            
+            .key-action {
+                grid-column: span 3;
+                height: 50px;
+                font-size: 18px;
+                margin-top: 10px;
+            }
+            
+            #confirmBtn {
+                background: linear-gradient(180deg, #4A9FE8 0%, #2E86D4 100%);
+                color: white;
+                font-weight: 700;
+                box-shadow: 0 4px 16px rgba(46, 134, 212, 0.5);
+            }
+            
+            .celebration-title, .broke-title, .warning-title, .pororo-title {
+                font-size: 36px;
+            }
+            
+            .celebration-subtitle, .broke-subtitle, .warning-subtitle, .pororo-subtitle {
+                font-size: 20px;
+            }
+        }
+        
+        /* ===== 제작자 링크 ===== */
+        .creator-link {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            font-size: 14px;
+            color: #6b7280;
+            text-decoration: none;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+        
+        .creator-link:hover {
+            color: #2E86D4;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .creator-link:active {
+            transform: translateY(0);
+        }
+        
+        @media (max-width: 768px) {
+            .creator-link {
+                font-size: 12px;
+                padding: 6px 10px;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Screen 0: 설정 화면 -->
+    <div id="screen0" class="screen active">
+        <div class="setup-container">
+            <h1 class="setup-title">🎉 생일 ATM 만들기</h1>
+            <p class="setup-subtitle">정보를 입력하고 특별한 생일 선물을 준비하세요!</p>
+            
+            <form id="setupForm">
+                <div class="form-group">
+                    <label class="form-label">🏦 은행 이름</label>
+                    <input type="text" class="form-input" id="bankName" placeholder="몽부부" required="">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">은행 아이콘</label>
+                    <div class="icon-selector" id="iconSelector">
+                        <button type="button" class="icon-btn selected" data-icon="🏦">🏦</button>
+                        <button type="button" class="icon-btn" data-icon="🏛️">🏛️</button>
+                        <button type="button" class="icon-btn" data-icon="💰">💰</button>
+                        <button type="button" class="icon-btn" data-icon="💎">💎</button>
+                        <button type="button" class="icon-btn" data-icon="🎁">🎁</button>
+                        <button type="button" class="icon-btn" data-icon="🎂">🎂</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">🎉 생일 주인공</label>
+                    <input type="text" class="form-input" id="birthdayPerson" placeholder="홍길동" required="">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">생일 (월/일)</label>
+                    <div class="date-inputs">
+                        <input type="number" class="form-input" id="birthMonth" placeholder="월 (1-12)" min="1" max="12" required="">
+                        <input type="number" class="form-input" id="birthDay" placeholder="일 (1-31)" min="1" max="31" required="">
+                    </div>
+                </div>
+                
+                <div class="form-group-inline">
+                    <div>
+                        <label class="form-label">이름 1</label>
+                        <input type="text" class="form-input" id="name1" placeholder="김철수" required="">
+                    </div>
+                    <div>
+                        <label class="form-label">이름 2</label>
+                        <input type="text" class="form-input" id="name2" placeholder="이영희" required="">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">이름 3</label>
+                    <input type="text" class="form-input" id="name3" placeholder="박민수" required="">
+                </div>
+                
+                <button type="submit" class="btn-primary submit-btn">ATM 시작하기 🎉</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Screen 1: Welcome -->
+    <div id="screen1" class="screen">
+        <div class="welcome-content">
+            <div class="bank-logo-container">
+                <div class="bank-logo" id="welcomeBankIcon">🏦</div>
+            </div>
+            <h2 class="welcome-text">환영합니다!</h2>
+            <p class="bank-name" id="welcomeBankName">몽부부은행입니다</p>
+            <h1 class="main-title">
+                생일 <span class="highlight">용돈</span> 서비스를<br>
+                원하시면 <span class="highlight">로그인</span> 해주세요
+            </h1>
+            <button class="btn-primary login-btn" id="loginBtn">로그인</button>
+        </div>
+    </div>
+    
+    <!-- Screen 2: Select Name -->
+    <div id="screen2" class="screen">
+        <h1 class="screen-title">성함을 눌러주세요</h1>
+        <div class="name-grid" id="nameGrid">
+            <!-- 동적 생성 -->
+        </div>
+    </div>
+    
+    <!-- Screen 3: Verify Identity -->
+    <div id="screen3" class="screen">
+        <div class="verify-container">
+            <h2 class="verify-title">본인인증을 해주세요</h2>
+            <p class="verify-subtitle">본인이 맞습니까?</p>
+            <div class="verify-content">
+                <div class="user-photo">🎂</div>
+                <div class="verify-buttons">
+                    <button class="btn-primary verify-btn" id="verifyYes">예</button>
+                    <button class="btn-secondary verify-btn" id="verifyNo">아니요</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Screen 4: PIN Entry -->
+    <div id="screen4" class="screen">
+        <div class="pin-container">
+            <div class="pin-left">
+                <h2 class="pin-title">비밀번호 입력</h2>
+                <p class="pin-subtitle">생일 네 자리를<br>입력해주세요</p>
+                <div class="pin-dots">
+                    <div class="pin-dot" id="dot1"></div>
+                    <div class="pin-dot" id="dot2"></div>
+                    <div class="pin-dot" id="dot3"></div>
+                    <div class="pin-dot" id="dot4"></div>
+                </div>
+                <div class="error-msg" id="errorMsg">비밀번호가 틀렸습니다</div>
+            </div>
+            <div class="keypad">
+                <button class="btn-secondary key-btn" data-key="1">1</button>
+                <button class="btn-secondary key-btn" data-key="2">2</button>
+                <button class="btn-secondary key-btn" data-key="3">3</button>
+                <button class="btn-secondary key-btn" data-key="4">4</button>
+                <button class="btn-secondary key-btn" data-key="5">5</button>
+                <button class="btn-secondary key-btn" data-key="6">6</button>
+                <button class="btn-secondary key-btn" data-key="7">7</button>
+                <button class="btn-secondary key-btn" data-key="8">8</button>
+                <button class="btn-secondary key-btn" data-key="9">9</button>
+                <button class="btn-secondary key-btn key-action" id="clearBtn">취소</button>
+                <button class="btn-secondary key-btn" data-key="0">0</button>
+                <button class="btn-primary key-btn key-action" id="confirmBtn">확인</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Screen 5: Birthday Celebration -->
+    <div id="screen5" class="screen">
+        <div class="celebration-top">
+            <h1 class="celebration-title">
+                🎉 축하합니다! 🎉
+                <span class="highlight" id="celebrationName">생일 축하합니다!</span>
+            </h1>
+		<p style="font-size: 1.5rem; color: #999999; margin-bottom: 15px; z-index: 1100;">카드를 투입해주세요</p>
+	<div class="atm-container">
+            <div class="card-hider"></div>
+                        <div class="top-hider"></div>
+                        <div class="slot-group">
+                <div class="black-bar bottom-bar"></div>
+                <div class="black-bar top-bar">
+                    <div class="slot-line"></div>
+                </div>
+            </div>
+
+            <div class="card"></div>
+        </div>
+            <p class="celebration-subtitle">오늘 하루도 행복하세요! 💝</p>
+        </div>
+    </div>
+    
+    <!-- Screen 6: 이름1 - 잔액 부족 -->
+    <div id="screen6" class="screen">
+        <div class="error-container">
+            <div class="error-icon">🏧</div>
+            <h1 class="error-title">거래 불가</h1>
+            <p class="error-message">고객님의 생일 잔액이 부족합니다.</p>
+            <div class="error-detail">
+                <div class="error-detail-row">
+                    <span class="error-detail-label">잔액</span>
+                    <span class="error-detail-value">0원</span>
+                </div>
+                <div class="error-detail-row">
+                    <span class="error-detail-label" id="birthdayLabel">탄생일</span>
+                    <span class="error-detail-value" id="birthdayDate">10월 1일</span>
+                </div>
+            </div>
+            <button class="btn-primary retry-btn" id="retryBtn6">다시 선택하기</button>
+        </div>
+    </div>
+    
+    <!-- Screen 7: 이름2 - 협박 -->
+    <div id="screen7" class="screen">
+        <div class="warning-container">
+            <div class="warning-icon">👀</div>
+            <h1 class="warning-title">어라...?</h1>
+            <p class="warning-message">
+                용돈은 생일인 사람만 받을 수 있어요!<br>
+                지금 거짓말 하시면...
+            </p>
+            <div class="warning-alert">
+                <span id="warningBankName">몽부부</span>은행 보안팀 출동 🚨
+            </div>
+            <p class="warning-small">(농담이에요 ㅎㅎ 다시 눌러보세요~)</p>
+            <button class="btn-primary honest-btn" id="retryBtn7">솔직하게 다시 선택</button>
+        </div>
+    </div>
+    
+    <!-- Screen 8: 이름3 - 땡! -->
+    <div id="screen8" class="screen">
+        <div class="wrong-container">
+            <div class="wrong-icon">🎂</div>
+            <h1 class="wrong-title">땡! 오늘은 아니에요~</h1>
+            <p class="wrong-message">
+                죄송합니다만,<br>
+                오늘 용돈 서비스는<br>
+                ✨ 특별한 분 ✨ 전용입니다!
+            </p>
+            <div class="wrong-hint">
+                (힌트: <span id="hintBirthday1">10월 23일</span>생...)
+            </div>
+            <button class="btn-primary wrong-btn" id="retryBtn8">누군지 다시 생각해보기</button>
+        </div>
+    </div>
+    
+    <script>
+        // ==========================================
+        // 설정 및 데이터 관리
+        // ==========================================
+        
+        let config = {
+            bankName: '몽부부',
+            bankIcon: '🏦',
+            birthdayPerson: '생일자',
+            birthMonth: 10,
+            birthDay: 23,
+            names: ['이름1', '이름2', '이름3']
+        };
+        
+        // URL에서 설정 로드
+        function loadConfigFromURL() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                try {
+                    const decoded = decodeURIComponent(atob(hash));
+                    config = JSON.parse(decoded);
+                    return true;
+                } catch(e) {
+                    console.error('Invalid URL config');
+                    return false;
+                }
+            }
+            return false;
+        }
+        
+        // ==========================================
+        // 화면 초기화
+        // ==========================================
+        
+        function initializeScreens() {
+            // Welcome 화면
+            document.getElementById('welcomeBankIcon').textContent = config.bankIcon;
+            document.getElementById('welcomeBankName').textContent = config.bankName + '은행입니다';
+            
+            // Name Grid
+            const nameGrid = document.getElementById('nameGrid');
+            nameGrid.innerHTML = '';
+            
+            // 4개 이름 버튼 생성 (생일자 + 3명)
+            const allNames = [config.birthdayPerson, ...config.names];
+            allNames.forEach((name, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-primary name-btn';
+                btn.textContent = name;
+                btn.dataset.name = name;
+                btn.dataset.index = index;
+                nameGrid.appendChild(btn);
+            });
+            
+            // 경고 메시지 은행명
+            document.getElementById('warningBankName').textContent = config.bankName;
+            
+            // 힌트 생일
+            const birthdayHint = `${config.birthMonth}월 ${config.birthDay}일`;
+            document.getElementById('hintBirthday1').textContent = birthdayHint;
+            
+            // 축하 메시지
+            document.getElementById('celebrationName').textContent = config.birthdayPerson + '님 생일 축하합니다!';
+        }
+        
+        // 랜덤 생일 생성 (현재 생일자와 다른 날짜)
+        function generateRandomBirthday() {
+            let month, day;
+            do {
+                month = Math.floor(Math.random() * 12) + 1;
+                day = Math.floor(Math.random() * 28) + 1; // 안전하게 28일까지만
+            } while (month === config.birthMonth && day === config.birthDay);
+            
+            return `${month}월 ${day}일`;
+        }
+        
+        // ==========================================
+        // 오디오 재생
+        // ==========================================
+// ==========================================
+// MP3 파일 재생 및 아이패드 호환성 설정
+// ==========================================
+
+let currentAudio = null;
+
+// 오디오 초기화 함수 (사용자가 화면을 처음 터치할 때 권한을 얻기 위함)
+function initAudio() {
+    if (!currentAudio) {
+        currentAudio = new Audio('song.mp3'); // 파일명 확인: song.mp3
+        currentAudio.load();
+
+// 아이패드에게 "곧 소리를 낼 거야"라고 미리 알려주는 작업입니다.
+        currentAudio.play().then(() => {
+            currentAudio.pause(); // 일단 바로 일시정지 (권한만 획득)
+            currentAudio.currentTime = 0;
+        }).catch(e => {});
+    }
+}
+
+function playBirthdayMelody() {
+    if (!currentAudio) {
+        currentAudio = new Audio('song.mp3');
+    }
+    
+    currentAudio.currentTime = 0; // 처음부터 재생
+    currentAudio.volume = 0.8;    // 볼륨 설정 (0.0 ~ 1.0)
+    
+    // 재생 시도
+    let playPromise = currentAudio.play();
+    
+    if (playPromise !== undefined) {
+        playPromise.catch(error => {
+            console.log("자동 재생 차단됨: 터치 후 재생을 시도합니다.");
+            // 실패 시, 화면 아무 곳이나 누르면 재생되도록 설정
+            document.addEventListener('click', () => {
+                currentAudio.play();
+            }, { once: true });
+        });
+    }
+}
+
+function stopAudio() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+    }
+}
+
+// 기존 goToScreen 함수 안에 이 내용을 꼭 확인하세요!
+// (Screen 5가 될 때 노래를 틀어주는 부분)
+function goToScreen(screenNum) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen' + screenNum).classList.add('active');
+    
+// 사용자가 버튼을 눌러 화면이 바뀔 때마다 소리 재생 권한을 체크합니다.
+    initAudio();
+
+    if (screenNum === 5) {
+        playBirthdayMelody(); // 5번 화면(축하)이 되면 노래 시작
+    } else {
+        stopAudio(); // 다른 화면으로 가면 노래 정지
+    }
+}        
+        // ==========================================
+        // 화면 전환 및 게임 로직
+        // ==========================================
+        
+        let selectedName = '';
+        let currentPin = '';
+        let correctPin = '';
+        
+        function goToScreen(num) {
+            stopAudio();
+            
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen' + num).classList.add('active');
+            
+            if (num === 5) {
+                startCelebration('screen5');
+                playBirthdayMelody();
+            }
+        }
+        
+        function selectName(name, index) {
+            selectedName = name;
+            
+            if (index === 0) {
+                // 생일자 선택
+                goToScreen(3);
+            } else if (index === 1) {
+                // 이름1 - 잔액 부족
+                document.getElementById('birthdayLabel').textContent = '다음 충전일';
+				document.getElementById('birthdayDate').textContent = name + ' 탄생일';
+                goToScreen(6);
+            } else if (index === 2) {
+                // 이름2 - 협박
+                goToScreen(7);
+            } else if (index === 3) {
+                // 이름3 - 땡!
+                goToScreen(8);
+            }
+        }
+        
+        function enterPin(digit) {
+            if (currentPin.length < 4) {
+                currentPin += digit;
+                updatePinDisplay();
+            }
+        }
+        
+        function clearPin() {
+            currentPin = '';
+            updatePinDisplay();
+            document.getElementById('errorMsg').classList.remove('show');
+        }
+        
+        function updatePinDisplay() {
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById('dot' + i);
+                if (i <= currentPin.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            }
+        }
+        
+        function confirmPin() {
+            if (currentPin === correctPin) {
+                goToScreen(5);
+            } else {
+                document.getElementById('errorMsg').classList.add('show');
+                currentPin = '';
+                updatePinDisplay();
+                setTimeout(() => {
+                    document.getElementById('errorMsg').classList.remove('show');
+                }, 2000);
+            }
+        }
+        
+        // ==========================================
+        // 축하 효과
+        // ==========================================
+        
+        function startCelebration(screenId) {
+            const screen = document.getElementById(screenId);
+            const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#1dd1a1', '#ffd700', '#ff4757', '#5f27cd'];
+            
+            for (let i = 0; i < 80; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animation = `confetti-fall ${4 + Math.random() * 3}s linear infinite`;
+                confetti.style.animationDelay = Math.random() * 5 + 's';
+                screen.appendChild(confetti);
+            }
+            
+            const starEmojis = ['⭐', '✨', '🌟', '💫', '🎉', '🎊', '🎈', '🎁', '💝'];
+            
+            for (let i = 0; i < 15; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.textContent = starEmojis[Math.floor(Math.random() * starEmojis.length)];
+                star.style.left = Math.random() * 85 + 5 + '%';
+                star.style.top = Math.random() * 85 + 5 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                screen.appendChild(star);
+            }
+            
+            const fireworkInterval = setInterval(() => createFirework(screenId), 1200);
+            screen.dataset.fireworkInterval = fireworkInterval;
+        }
+        
+        function createFirework(screenId) {
+            const screen = document.getElementById(screenId);
+            if (!screen.classList.contains('active')) return;
+            
+            const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#ffd700', '#5f27cd'];
+            const x = Math.random() * 70 + 15;
+            const y = Math.random() * 50 + 15;
+            
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'firework';
+                particle.style.left = x + '%';
+                particle.style.top = y + '%';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.boxShadow = `0 0 6px ${colors[Math.floor(Math.random() * colors.length)]}`;
+                
+                const angle = (Math.PI * 2 * i) / 10;
+                const vx = Math.cos(angle);
+                const vy = Math.sin(angle);
+                particle.style.setProperty('--x', vx);
+                particle.style.setProperty('--y', vy);
+                
+                particle.style.animation = 'explode 1.2s ease-out forwards';
+                screen.appendChild(particle);
+                setTimeout(() => particle.remove(), 1200);
+            }
+        }
+        
+        // ==========================================
+        // 이벤트 리스너
+        // ==========================================
+        
+        function addTapEvent(element, callback) {
+            if (!element) return;
+            
+            element.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                callback(e);
+            }, { passive: false });
+            
+            element.addEventListener('click', function(e) {
+                callback(e);
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // URL에서 설정 로드 시도
+            if (loadConfigFromURL()) {
+                initializeScreens();
+                goToScreen(1);
+            } else {
+                goToScreen(0);
+            }
+            
+            // 설정 폼 제출
+            document.getElementById('setupForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                config.bankName = document.getElementById('bankName').value.trim();
+                config.birthdayPerson = document.getElementById('birthdayPerson').value.trim();
+                config.birthMonth = parseInt(document.getElementById('birthMonth').value);
+                config.birthDay = parseInt(document.getElementById('birthDay').value);
+                config.names = [
+                    document.getElementById('name1').value.trim(),
+                    document.getElementById('name2').value.trim(),
+                    document.getElementById('name3').value.trim()
+                ];
+                
+                // URL 업데이트 (공유용)
+                const encoded = btoa(encodeURIComponent(JSON.stringify(config)));
+                window.location.hash = encoded;
+                
+                // 화면 초기화 및 시작
+                initializeScreens();
+                goToScreen(1);
+            });
+            
+            // 아이콘 선택
+            document.querySelectorAll('.icon-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    config.bankIcon = this.dataset.icon;
+                });
+            });
+            
+            // 로그인 버튼
+            addTapEvent(document.getElementById('loginBtn'), function() {
+                // 비밀번호 생성
+                correctPin = String(config.birthMonth).padStart(2, '0') + String(config.birthDay).padStart(2, '0');
+                goToScreen(2);
+            });
+            
+            // 이름 버튼들 (동적 생성되므로 delegation 사용)
+            document.getElementById('nameGrid').addEventListener('click', function(e) {
+                if (e.target.classList.contains('name-btn')) {
+                    const name = e.target.dataset.name;
+                    const index = parseInt(e.target.dataset.index);
+                    selectName(name, index);
+                }
+            });
+            
+            // 본인인증
+            addTapEvent(document.getElementById('verifyYes'), function() {
+                goToScreen(4);
+            });
+            
+            addTapEvent(document.getElementById('verifyNo'), function() {
+                goToScreen(2);
+            });
+            
+            // 키패드
+            document.querySelectorAll('.key-btn[data-key]').forEach(function(btn) {
+                addTapEvent(btn, function() {
+                    enterPin(btn.dataset.key);
+                });
+            });
+            
+            addTapEvent(document.getElementById('clearBtn'), function() {
+                clearPin();
+            });
+            
+            addTapEvent(document.getElementById('confirmBtn'), function() {
+                confirmPin();
+            });
+            
+            // 재시도 버튼들
+            addTapEvent(document.getElementById('retryBtn6'), function() {
+                goToScreen(2);
+            });
+            
+            addTapEvent(document.getElementById('retryBtn7'), function() {
+                goToScreen(2);
+            });
+            
+            addTapEvent(document.getElementById('retryBtn8'), function() {
+                goToScreen(2);
+            });
+        });
+    </script>
+    
+    <!-- 제작자 링크 -->
+    <a href="https://www.instagram.com/honey_tree_recipe" target="_blank" rel="noopener noreferrer" class="creator-link">
+        제작자 : 꿀무의레시피
+    </a>
+
+
+</body><whale-quicksearch translate="no" style="visibility: visible;"></whale-quicksearch></html>
